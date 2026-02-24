@@ -1,0 +1,12 @@
+# Ignore folder contents, keep .gitkeep for structure
+/crm-tg-app/*
+!/crm-tg-app/.gitkeep
+
+/crm-tg-app-backend/*
+!/crm-tg-app-backend/.gitkeep
+
+/crm-tg-app-postgress/*
+!/crm-tg-app-postgress/.gitkeep
+
+/nginx/*
+!/nginx/.gitkeep
