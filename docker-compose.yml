@@ -6,14 +6,18 @@ services:
     restart: always
     ports:
       - "5432:5432"
-
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: app
-
     volumes:
-      - crm-tg-app-postgress:/var/lib/postgresql/data
+      - ./crm-tg-app-postgress/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
+      timeout: 5s
+      retries: 15
+      start_period: 20s
 
 
   pgadmin:
@@ -22,10 +26,13 @@ services:
     restart: always
     ports:
       - "5050:80"
-
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_REPLACE_SERVERS_ON_STARTUP: "True"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./config/pgadmin-servers.json:/pgadmin4/servers.json:ro
 
 
   valkey:
@@ -64,8 +71,10 @@ services:
       dockerfile: Dockerfile
     container_name: crm-tg-app-backend
     depends_on:
-      - postgres
-      - valkey
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_started
     volumes:
       - ./crm-tg-app-backend:/app
       - crm-tg-app-backend-node-modules:/app/node_modules
@@ -96,7 +105,7 @@ services:
 
 volumes:
   postgres_data:
+  pgadmin_data:
   valkey_data:
-  crm-tg-app-postgress:
   crm-tg-app-node-modules:
   crm-tg-app-backend-node-modules:

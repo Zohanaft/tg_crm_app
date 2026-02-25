@@ -8,5 +8,11 @@
 /crm-tg-app-postgress/*
 !/crm-tg-app-postgress/.gitkeep
 
+/crm-tg-app-postgress/*
+!/crm-tg-app-postgress/.gitkeep
+
 /nginx/*
 !/nginx/.gitkeep
+
+# Docker data (postgres, pgadmin) — не коммитить
+/data/
