@@ -1,0 +1,1 @@
+*/5 * * * * psql -c 'UPDATE users SET "planId" = 1 WHERE "planExpiresAt" IS NOT NULL AND "planExpiresAt" < NOW() AND "planId" != 1;'

@@ -12,6 +12,7 @@ services:
       POSTGRES_DB: app
     volumes:
       - ./crm-tg-app-postgress/postgres:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 3s
@@ -92,6 +93,22 @@ services:
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
       - VALKEY_URL=redis://valkey:6379
+    # Migrations run before app start (see Dockerfile CMD). To run migrate manually (e.g. from host):
+    # docker compose run --rm crm-tg-app-backend npx prisma migrate deploy
+
+  cron:
+    image: postgres:16-alpine
+    container_name: cron
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: app
+    entrypoint: ["sh", "-c", "while true; do psql -c \"UPDATE users SET \\\"planId\\\" = 1 WHERE \\\"planExpiresAt\\\" IS NOT NULL AND \\\"planExpiresAt\\\" < NOW() AND \\\"planId\\\" != 1;\"; sleep 300; done"]
 
   nginx:
     image: nginx:alpine
