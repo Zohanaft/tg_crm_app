@@ -1,0 +1,14 @@
+---
+description: При правке UI/стилей crm-tg-app — применять референс TailAdmin (Tailwind + Nuxt/UI), не менять лого
+globs: crm-tg-app/**/*.vue, crm-tg-app/**/*.css
+alwaysApply: false
+---
+
+# Дизайн по референсу TailAdmin (crm-tg-app)
+
+При изменении разметки, стилей или добавлении UI во фронтенде **crm-tg-app**:
+
+1. **Применить** скилл: [.ai/tailadmin-design/SKILL.md](../.ai/tailadmin-design/SKILL.md)
+2. Стили — только **Tailwind + Nuxt/UI**; не добавлять свои библиотеки и элементы.
+3. **Логотип сайта не менять** (оставить текущий `/images/logo.svg` и его использование).
+4. Цвета, отступы, карточки — по [reference.md](../.ai/tailadmin-design/reference.md).

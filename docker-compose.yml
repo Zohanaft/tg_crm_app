@@ -106,6 +106,8 @@ services:
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
       - VALKEY_URL=redis://valkey:6379
+      - WSS_INTERNAL_URL=http://crm-tg-app-wss:3002
+      - WSS_SHARED_SECRET=local-wss-secret
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:3000/api-doc', (r) => { process.exit(r.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1));"]
       interval: 15s
@@ -114,6 +116,30 @@ services:
       start_period: 90s
     # Migrations run before app start (see Dockerfile CMD). To run migrate manually (e.g. from host):
     # docker compose run --rm crm-tg-app-backend npx prisma migrate deploy
+
+  crm-tg-app-wss:
+    build:
+      context: ./crm-tg-app-wss
+      dockerfile: Dockerfile
+    container_name: crm-tg-app-wss
+    depends_on:
+      crm-tg-app-backend:
+        condition: service_healthy
+    volumes:
+      - ./crm-tg-app-wss:/app
+      - crm-tg-app-wss-node-modules:/app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=3002
+      - BACKEND_INTERNAL_URL=http://crm-tg-app-backend:3000
+      - WSS_INTERNAL_URL=http://crm-tg-app-wss:3002
+      - WSS_SHARED_SECRET=local-wss-secret
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:3002/healthz', (r) => { process.exit(r.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1));"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
 
   cron:
     image: postgres:16-alpine
@@ -147,6 +173,8 @@ services:
         condition: service_started
       crm-tg-app-backend:
         condition: service_healthy
+      crm-tg-app-wss:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:80/ || exit 1"]
       interval: 10s
@@ -160,3 +188,4 @@ volumes:
   valkey_data:
   crm-tg-app-node-modules:
   crm-tg-app-backend-node-modules:
+  crm-tg-app-wss-node-modules:
