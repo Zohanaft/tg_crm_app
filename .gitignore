@@ -16,3 +16,6 @@
 
 # Docker data (postgres, pgadmin) — не коммитить
 /data/
+
+# Compose secrets (Postgres, pgAdmin, WSS)
+/.env

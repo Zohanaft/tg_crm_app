@@ -5,8 +5,8 @@
       "Group": "Servers",
       "Host": "postgres",
       "Port": 5432,
-      "Username": "postgres",
-      "MaintenanceDB": "postgres",
+      "Username": "crm_pg_app",
+      "MaintenanceDB": "app",
       "SSLMode": "prefer"
     }
   }
