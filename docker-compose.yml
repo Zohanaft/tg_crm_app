@@ -1,5 +1,5 @@
-# Переменные: автоматически из `.env` в корне (если есть) или значения по умолчанию ниже.
-# Эталон для копирования: compose.env  |  переопределение: скопируй compose.env → .env
+# Переменные из корневого `.env` (см. `.env.example`). Для локалки есть слабые дефолты POSTGRES_PASSWORD / WSS_SHARED_SECRET; в проде задай свои в `.env`.
+# Docker Compose: https://docs.docker.com/compose/environment-variables/
 services:
 
   # POSTGRES_* из .env действуют только при пустом data-dir. Старые кластеры подтягивает postgres-role-sync.
@@ -12,7 +12,7 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-crm_pg_app}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-748b0724049e17eaa919dc5ceb09c135d1a6fe45}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-localdev_postgres_password_change_in_env}
       POSTGRES_DB: ${POSTGRES_DB:-app}
     volumes:
       - ./crm-tg-app-postgress/postgres:/var/lib/postgresql/data
@@ -42,7 +42,7 @@ services:
       PGPORT: "5432"
       POSTGRES_DB: ${POSTGRES_DB:-app}
       POSTGRES_USER: ${POSTGRES_USER:-crm_pg_app}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-748b0724049e17eaa919dc5ceb09c135d1a6fe45}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-localdev_postgres_password_change_in_env}
     volumes:
       - ./scripts/postgres-role-sync.sh:/postgres-role-sync.sh:ro
     entrypoint:
@@ -50,7 +50,7 @@ services:
       - -c
       - sed 's/\r$//' /postgres-role-sync.sh | /bin/sh
 
-  # Креды первого входа задаются в compose.env (не только через ${} — так надёжнее). Переопределение: корневой .env.
+  # pgAdmin: креды первого входа из compose.env (синхронизируй с корневым `.env`). В прод не планируется — сервис можно отключить.
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin-local
@@ -136,17 +136,18 @@ services:
       - NODE_ENV=development
       - PORT=3000
       - HOST=0.0.0.0
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-crm_pg_app}:${POSTGRES_PASSWORD:-748b0724049e17eaa919dc5ceb09c135d1a6fe45}@postgres:5432/${POSTGRES_DB:-app}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-crm_pg_app}:${POSTGRES_PASSWORD:-localdev_postgres_password_change_in_env}@postgres:5432/${POSTGRES_DB:-app}
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - POSTGRES_DB_USER=${POSTGRES_USER:-crm_pg_app}
-      - POSTGRES_DB_PASSWORD=${POSTGRES_PASSWORD:-748b0724049e17eaa919dc5ceb09c135d1a6fe45}
+      - POSTGRES_DB_PASSWORD=${POSTGRES_PASSWORD:-localdev_postgres_password_change_in_env}
       - POSTGRES_DB_NAME=${POSTGRES_DB:-app}
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
       - VALKEY_URL=redis://valkey:6379
       - WSS_INTERNAL_URL=http://crm-tg-app-wss:3002
-      - WSS_SHARED_SECRET=${WSS_SHARED_SECRET:-2d1484216f5b66453a561ff783666d2c392856e45b12d882}
+      - WSS_SHARED_SECRET=${WSS_SHARED_SECRET:-localdev_wss_shared_secret_change_in_env}
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:3000/api-doc', (r) => { process.exit(r.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1));"]
       interval: 15s
@@ -172,7 +173,7 @@ services:
       - PORT=3002
       - BACKEND_INTERNAL_URL=http://crm-tg-app-backend:3000
       - WSS_INTERNAL_URL=http://crm-tg-app-wss:3002
-      - WSS_SHARED_SECRET=${WSS_SHARED_SECRET:-2d1484216f5b66453a561ff783666d2c392856e45b12d882}
+      - WSS_SHARED_SECRET=${WSS_SHARED_SECRET:-localdev_wss_shared_secret_change_in_env}
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:3002/healthz', (r) => { process.exit(r.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1));"]
       interval: 15s
@@ -192,7 +193,7 @@ services:
       PGHOST: postgres
       PGPORT: 5432
       PGUSER: ${POSTGRES_USER:-crm_pg_app}
-      PGPASSWORD: ${POSTGRES_PASSWORD:-748b0724049e17eaa919dc5ceb09c135d1a6fe45}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-localdev_postgres_password_change_in_env}
       PGDATABASE: ${POSTGRES_DB:-app}
     entrypoint: ["sh", "-c", "while true; do psql -c \"UPDATE users SET \\\"planId\\\" = 1 WHERE \\\"planExpiresAt\\\" IS NOT NULL AND \\\"planExpiresAt\\\" < NOW() AND \\\"planId\\\" != 1;\"; sleep 300; done"]
     healthcheck:
