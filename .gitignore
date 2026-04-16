@@ -19,3 +19,5 @@
 
 # Compose secrets (Postgres, pgAdmin, WSS)
 /.env
+/.env.example
+/compose.env

@@ -105,6 +105,10 @@ services:
     volumes:
       - ./crm-tg-app:/app
       - crm-tg-app-node-modules:/app/node_modules
+    env_file:
+      - compose.env
+      - path: .env
+        required: false
     environment:
       - NODE_ENV=development
       - DOCKER=1
